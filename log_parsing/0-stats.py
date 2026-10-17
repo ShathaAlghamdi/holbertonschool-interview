@@ -40,6 +40,9 @@ def main():
                 display(total, counts)
     except KeyboardInterrupt:
         display(total, counts)
+    else:
+        if lines % 10 != 0:
+            display(total, counts)
 
 
 if __name__ == "__main__":
