@@ -1,48 +1,58 @@
 #!/usr/bin/python3
-"""Parse HTTP access logs from standard input."""
-import re
+"""Read HTTP logs from stdin and print statistics."""
+
 import sys
+import re
 
 
-PATTERN = re.compile(
-    r'^\S+ - \[[^\]\r\n]+\] "GET /projects/260 HTTP/1\.1" (\S+) (\d+)$'
-)
-CODES = (200, 301, 400, 401, 403, 404, 405, 500)
+def print_stats(total_size, status_counts):
+    """Print total file size and status code counts."""
+    print("File size: {}".format(total_size))
 
-
-def display(total, counts):
-    """Print cumulative metrics in ascending status-code order."""
-    print("File size: {}".format(total), flush=True)
-    for code in CODES:
-        if counts[code]:
-            print("{}: {}".format(code, counts[code]), flush=True)
+    for code in sorted(status_counts):
+        if status_counts[code] > 0:
+            print("{}: {}".format(code, status_counts[code]))
 
 
 def main():
-    """Consume lines and report results every ten lines or on interrupt."""
-    total = 0
-    counts = {code: 0 for code in CODES}
-    lines = 0
+    """Read log lines and compute cumulative statistics."""
+    total_size = 0
+    line_count = 0
+    status_counts = {}
+
+    valid_codes = {200, 301, 400, 401, 403, 404, 405, 500}
+
+    pattern = re.compile(
+        r'^\S+ - \[[^\]\r\n]+\] '
+        r'"GET /projects/260 HTTP/1\.1" '
+        r'(\d+) (\d+)$'
+    )
+
     try:
         for line in sys.stdin:
-            lines += 1
-            match = PATTERN.fullmatch(line.rstrip('\r\n'))
+            line_count += 1
+            match = pattern.fullmatch(line.rstrip("\r\n"))
+
             if match:
-                code_text, size_text = match.groups()
-                total += int(size_text)
-                try:
-                    code = int(code_text)
-                except ValueError:
-                    code = None
-                if code in counts:
-                    counts[code] += 1
-            if lines % 10 == 0:
-                display(total, counts)
+                status = int(match.group(1))
+                size = int(match.group(2))
+
+                total_size += size
+
+                if status in valid_codes:
+                    status_counts[status] = (
+                        status_counts.get(status, 0) + 1
+                    )
+
+            if line_count % 10 == 0:
+                print_stats(total_size, status_counts)
+
     except KeyboardInterrupt:
-        display(total, counts)
-    else:
-        if lines % 10 != 0:
-            display(total, counts)
+        print_stats(total_size, status_counts)
+        return
+
+    if line_count == 0 or line_count % 10 != 0:
+        print_stats(total_size, status_counts)
 
 
 if __name__ == "__main__":
