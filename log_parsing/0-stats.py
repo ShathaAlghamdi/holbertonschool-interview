@@ -1,43 +1,43 @@
+
 #!/usr/bin/python3
-"""Read HTTP logs from stdin and print statistics."""
+"""Parse HTTP logs and compute statistics."""
 
 import sys
-import re
 
 
 def print_stats(total_size, status_counts):
-    """Print total file size and status code counts."""
+    """Print accumulated statistics."""
     print("File size: {}".format(total_size))
 
     for code in sorted(status_counts):
         if status_counts[code] > 0:
             print("{}: {}".format(code, status_counts[code]))
 
+    sys.stdout.flush()
+
 
 def main():
-    """Read log lines and compute cumulative statistics."""
+    """Read log lines from standard input."""
     total_size = 0
     line_count = 0
     status_counts = {}
 
-    valid_codes = {200, 301, 400, 401, 403, 404, 405, 500}
-
-    pattern = re.compile(
-        r'^\S+ - \[[^\]\r\n]+\] '
-        r'"GET /projects/260 HTTP/1\.1" '
-        r'(\d+) (\d+)$'
-    )
+    valid_codes = ("200", "301", "400", "401",
+                   "403", "404", "405", "500")
 
     try:
         for line in sys.stdin:
             line_count += 1
-            match = pattern.fullmatch(line.rstrip("\r\n"))
+            parts = line.split()
 
-            if match:
-                status = int(match.group(1))
-                size = int(match.group(2))
+            if len(parts) >= 2:
+                try:
+                    size = int(parts[-1])
+                    total_size += size
+                except ValueError:
+                    pass
 
-                total_size += size
+                status = parts[-2]
 
                 if status in valid_codes:
                     status_counts[status] = (
