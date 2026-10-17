@@ -1,12 +1,12 @@
 
 #!/usr/bin/python3
-"""Parse HTTP logs and compute statistics."""
+"""Parse HTTP logs and print statistics."""
 
 import sys
 
 
 def print_stats(total_size, status_counts):
-    """Print accumulated statistics."""
+    """Print the accumulated statistics."""
     print("File size: {}".format(total_size))
 
     for code in sorted(status_counts):
@@ -17,11 +17,10 @@ def print_stats(total_size, status_counts):
 
 
 def main():
-    """Read log lines from standard input."""
+    """Read log lines and compute statistics."""
     total_size = 0
     line_count = 0
     status_counts = {}
-
     valid_codes = ("200", "301", "400", "401",
                    "403", "404", "405", "500")
 
@@ -32,13 +31,11 @@ def main():
 
             if len(parts) >= 2:
                 try:
-                    size = int(parts[-1])
-                    total_size += size
+                    total_size += int(parts[-1])
                 except ValueError:
                     pass
 
                 status = parts[-2]
-
                 if status in valid_codes:
                     status_counts[status] = (
                         status_counts.get(status, 0) + 1
