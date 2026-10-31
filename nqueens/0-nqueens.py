@@ -1,21 +1,14 @@
-#!/usr/bin/python3
+#!/usr/init/env python3
+#!/usr/bin/env python3
 """
-Module to solve the N queens puzzle using backtracking.
+Module to solve the N queens puzzle.
 """
 import sys
 
 
 def solve_nqueens(n: int) -> None:
-    """
-    Solves the N queens problem and prints all possible solutions.
-
-    Args:
-        n (int): The size of the chessboard and number of queens.
-    """
+    """Solves the N queens problem and prints all possible solutions."""
     def backtrack(row: int, current_solution: list) -> None:
-        """
-        Recursive backtracking function to find valid positions for queens.
-        """
         if row == n:
             print(current_solution)
             return
