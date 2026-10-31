@@ -53,8 +53,7 @@ def main():
         raise
 
     finally:
-        if line_count > 0:
-            print_stats(total_file_size, status_codes)
+        print_stats(total_file_size, status_codes)
 
 
 if __name__ == "__main__":
